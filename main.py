@@ -4,8 +4,6 @@ from urllib.parse import unquote
 import shutil
 import subprocess
 
-# using sudo -E will exclude a given path if in env (preserves variables)
-
 # grab directory to create variables of the output (files, info, expunged)
 tr_path = os.path.join(os.environ["HOME"], ".local/share/Trash")
 tr_files = os.path.join(tr_path, "files")
@@ -38,7 +36,7 @@ def restore_file(filename):
     os.makedirs(os.path.dirname(og_path), exist_ok=True)
     os.rename(trash_file, og_path)
     os.remove(info_file)
-    print(f"restored {filename} to {og_path}")
+    print(f"Restored {filename} to {og_path}")
 
     # os.path.basename(og_path)
 
@@ -204,6 +202,3 @@ elif what == "d":
 #       - make script to change file permission (with permission from user) to delete
 #   (for now give permission error so program doesnt crash)
 # -------------------------------------------------#
-
-# TO ADD:
-# - deletion date
