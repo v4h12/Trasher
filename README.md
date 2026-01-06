@@ -14,17 +14,29 @@ Trasher is a basic CLI program made with python that manages your trash and make
 
 ## How it looks
 
-~ trasher
+```bash
+$ trasher
 Files in Trash:
+┌───────────────────────────────────────────────────────┐
+ 1.) test - 0.0B
+ 2.) test2 - 0.0B
+ 3.) anothertest - 0.0B
+ 4.) test3 - 0.0B
+ 5.) testa - 0.0B
+└───────────────────────────────────────────────────────┘
 
-1. Test-file.txt - 0.1B
-2. Test-dir(/) - 2.3MB
-3. Test-Movie.mp4 - 1.9GB
-Restore or Delete files? (r/d): 'r'
-Restore all files? (y/n): 'n'
-Select number/s to restore: '1 2'
-Restored Test-Movie.mpd4 to /home/user/Downloads/Movies
-Restored Test-dir to /home/user/test/Test-dir
+Restore or Delete files? (r/d): r
+
+Restore all files? (y/n): n
+
+Select number/s to restore: 1 2 4
+
+┌───────────────────────────────────────────────────────┐
+ Restored test to /home/v4h/test-dir/test
+ Restored test2 to /home/v4h/test-dir/test2
+ Restored test3 to /home/v4h/test-dir/test3
+└───────────────────────────────────────────────────────┘
+```
 
 ## The way it works
 
@@ -37,17 +49,20 @@ Restored Test-dir to /home/user/test/Test-dir
 ~ any files that are protected through root privileges or permissions can still be deleted and you will be prompted with your password when you are at that point.
 Be careful doing this, any important files that you delete are at your own discretion.
 
+## Inspiration
+
+This is my very first actual project that I have created from scratch, I have spent the past year learning python - having no previous coding experience. It has been quite the journey so far and quite the steep learning process - such as learning libraries I have never used and reading through docs, going through StackOverFlow for the most basic issues and also just keeping up and remembering which part of your code does what. These projects are what I enjoy making - something useful, simple and fun!
+In lieu of the many free resources I myself have used, i thought it would only be fitting to give something in return, regardless of how small it may be.
+
+Please feel free to make any suggestions, pull requests or anything - it will all be appreciated.
+
+##
+
 **To Add:**
 
 - I plan on adding a TUI version with the curses library... More to come.
 - There is also a plan on adding in flags for more specific usage of Trasher
 - Desktop use (ascii art)
-
-**Inspiration**
-This is my very first actual project that I have created from scratch, I have spent the past year learning python - having no previous coding experience. It has been quite the journey so far and quite the steep learning process - such as learning libraries I have never used and reading through docs, going through stackoverflow for the most basic issues and also just keeping up and remembering which part of your code does what. These projects are what I enjoy making - something useful, simple and fun!
-In lieu of the many free resources I myself have used, i thought it would only be fitting to give something in return, regardless of how small it may be.
-
-Please feel free to make any suggestions, pull requests or anything - it will all be appreciated.
 
 **Additional Notes:**
 
