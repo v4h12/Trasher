@@ -36,9 +36,7 @@ def restore_file(filename):
     os.makedirs(os.path.dirname(og_path), exist_ok=True)
     os.rename(trash_file, og_path)
     os.remove(info_file)
-    print(f"Restored {filename} to {og_path}")
-
-    # os.path.basename(og_path)
+    print(f" Restored {filename} to {og_path}")
 
 
 # delete function
@@ -66,7 +64,9 @@ def delete_file(filename):
         if chper == "y":
             try:
                 print("requesting sudo access...")
-                perch = subprocess.run(
+
+                # change ownership
+                subprocess.run(
                     [
                         "sudo",
                         "chown",
@@ -78,7 +78,8 @@ def delete_file(filename):
                     stderr=subprocess.PIPE,
                 )
 
-                modch = subprocess.run(
+                # change permissions
+                subprocess.run(
                     [
                         "sudo",
                         "chmod",
@@ -137,6 +138,7 @@ def get_file_num(prompt, max_files):
             print("Invalid input")
 
 
+# list file or directory sizes when files get listed
 def format_size(bytes):
     for unit in ["B", "KB", "MB", "GB"]:
         if bytes < 1024:
@@ -146,47 +148,78 @@ def format_size(bytes):
 
 
 # print filenames in the info dir
-if not os.listdir(tr_files):
-    print("Trash is empty")
-    exit()
-else:
-    print("Files in trash: ")
-    files = os.listdir(tr_files)
-    for i, filename in enumerate(files, 1):
-        file_path = os.path.join(tr_files, filename)
-        if os.path.isdir(file_path):
-            size_bytes = os.stat(os.path.join(tr_files, filename)).st_size
-            print(f" {i}. {filename}(/) - {format_size(size_bytes)}")
+# wrap main code for 'KeyboardInterrupt' prompt
+if __name__ == "__main__":
+    try:
+        if not os.listdir(tr_files):
+            print("\nTrash is empty... nothing to trash :(\n")
+            exit()
         else:
-            size_bytes = os.stat(os.path.join(tr_files, filename)).st_size
-            print(f" {i}. {filename} - {format_size(size_bytes)}")
+            print("Files in trash: ")
+            print("┌" + "─" * 55 + "┐")
+            files = os.listdir(tr_files)
+            for i, filename in enumerate(files, 1):
+                file_path = os.path.join(tr_files, filename)
+                if os.path.isdir(file_path):
+                    size_bytes = os.stat(os.path.join(tr_files, filename)).st_size
+                    print(f" {i}.) {filename}(/) - {format_size(size_bytes)}")
+                else:
+                    size_bytes = os.stat(os.path.join(tr_files, filename)).st_size
+                    print(f" {i}.) {filename} - {format_size(size_bytes)}")
 
-# user input
-what = get_choice("Restore or Delete files? (r/d): ", ["r", "d"])
+        # ┌
+        # ┐
+        # ┘
+        # └
+        # user input
+        # print("─" * 55)
+        print("└" + "─" * 55 + "┘")
+        what = get_choice("\nRestore or Delete files? (r/d): ", ["r", "d"])
 
-# if you chose 'r' to restore files
-if what == "r":
-    resaf = get_choice("Restore all files? (y/n): ", ["y", "n"])
-    if resaf == "y":
-        for filename in os.listdir(tr_files):
-            restore_file(filename)
+        # if you chose 'r' to restore files
+        if what == "r":
+            resaf = get_choice("\nRestore all files? (y/n): ", ["y", "n"])
+            if resaf == "y":
+                # print("─" * 55)
+                print("\n" + "┌" + "─" * 55 + "┐")
+                for filename in os.listdir(tr_files):
+                    restore_file(filename)
+                # print("─" * 55)
+                print("└" + "─" * 55 + "┘")
 
-    elif resaf == "n":
-        indices = get_file_num("Select number/s to restore: ", len(files))
-        for index in indices:
-            restore_file(files[index])
+            elif resaf == "n":
+                indices = get_file_num("\nSelect number/s to restore: ", len(files))
+                # print("─" * 55)
+                print("\n" + "┌" + "─" * 55 + "┐")
+                for index in indices:
+                    restore_file(files[index])
+                # print("─" * 55)
+                print("└" + "─" * 55 + "┘")
 
-# if you choose 'd' to delete files
-elif what == "d":
-    delaf = get_choice("Delete all files? (y/n): ", ["y", "n"])
-    if delaf == "y":
-        for filename in os.listdir(tr_files):
-            delete_file(filename)
+        # if you choose 'd' to delete files
+        elif what == "d":
+            delaf = get_choice("\nDelete all files? (y/n): ", ["y", "n"])
+            if delaf == "y":
+                # print("─" * 55)
+                print("\n" + "┌" + "─" * 55 + "┐")
+                for filename in os.listdir(tr_files):
+                    delete_file(filename)
+                # print("─" * 55)
+                print("└" + "─" * 55 + "┘")
 
-    elif delaf == "n":
-        indices = get_file_num("Select number/s to delete: ", len(files))
-        for index in indices:
-            delete_file(files[index])
+            elif delaf == "n":
+                indices = get_file_num("\nSelect number/s to delete: ", len(files))
+                # print("─" * 55)
+                print("\n" + "┌" + "─" * 55 + "┐")
+                for index in indices:
+                    delete_file(files[index])
+                # print("─" * 55)
+                print("└" + "─" * 55 + "┘")
+
+    except KeyboardInterrupt:
+        print("\n\n... Quitting trasher\n")
+        exit(0)
+
 
 # -------------------------------------------------#
 # **FIXED**
