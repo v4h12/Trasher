@@ -147,6 +147,13 @@ def format_size(bytes):
     return f"{bytes:.1f}TB"
 
 
+#####################################################################################
+#                                                                                   #
+#           MAIN CODE - This is all the user input which uses                       #
+#                       the def functions above                                     #
+#                                                                                   #
+#####################################################################################
+
 # print filenames in the info dir
 # wrap main code for 'KeyboardInterrupt' prompt
 if __name__ == "__main__":
@@ -167,12 +174,7 @@ if __name__ == "__main__":
                     size_bytes = os.stat(os.path.join(tr_files, filename)).st_size
                     print(f" {i}.) {filename} - {format_size(size_bytes)}")
 
-        # ┌
-        # ┐
-        # ┘
-        # └
         # user input
-        # print("─" * 55)
         print("└" + "─" * 55 + "┘")
         what = get_choice("\nRestore or Delete files? (r/d): ", ["r", "d"])
 
@@ -180,40 +182,32 @@ if __name__ == "__main__":
         if what == "r":
             resaf = get_choice("\nRestore all files? (y/n): ", ["y", "n"])
             if resaf == "y":
-                # print("─" * 55)
                 print("\n" + "┌" + "─" * 55 + "┐")
                 for filename in os.listdir(tr_files):
                     restore_file(filename)
-                # print("─" * 55)
                 print("└" + "─" * 55 + "┘")
 
             elif resaf == "n":
                 indices = get_file_num("\nSelect number/s to restore: ", len(files))
-                # print("─" * 55)
                 print("\n" + "┌" + "─" * 55 + "┐")
                 for index in indices:
                     restore_file(files[index])
-                # print("─" * 55)
                 print("└" + "─" * 55 + "┘")
 
         # if you choose 'd' to delete files
         elif what == "d":
             delaf = get_choice("\nDelete all files? (y/n): ", ["y", "n"])
             if delaf == "y":
-                # print("─" * 55)
                 print("\n" + "┌" + "─" * 55 + "┐")
                 for filename in os.listdir(tr_files):
                     delete_file(filename)
-                # print("─" * 55)
                 print("└" + "─" * 55 + "┘")
 
             elif delaf == "n":
                 indices = get_file_num("\nSelect number/s to delete: ", len(files))
-                # print("─" * 55)
                 print("\n" + "┌" + "─" * 55 + "┐")
                 for index in indices:
                     delete_file(files[index])
-                # print("─" * 55)
                 print("└" + "─" * 55 + "┘")
 
     except KeyboardInterrupt:
@@ -235,3 +229,6 @@ if __name__ == "__main__":
 #       - make script to change file permission (with permission from user) to delete
 #   (for now give permission error so program doesnt crash)
 # -------------------------------------------------#
+
+# box outlines
+# ┌ ┐ ┘ └ ─
