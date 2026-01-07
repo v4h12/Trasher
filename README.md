@@ -10,7 +10,7 @@ Trasher is a basic CLI program made with python that manages your trash and make
 - cd trasher
 - chmod +x install.sh
 - ./install.sh
-- Then Bob's your uncle, you're ready to go!
+Then Bob's your uncle, you're ready to go!
 
 ## How it looks
 
@@ -18,7 +18,7 @@ Trasher is a basic CLI program made with python that manages your trash and make
 $ trasher
 Files in Trash:
 ┌───────────────────────────────────────────────────────┐
- 1.) test - 0.0B
+ 1.) test1 - 0.0B
  2.) test2 - 0.0B
  3.) anothertest - 0.0B
  4.) test3 - 0.0B
@@ -32,7 +32,7 @@ Restore all files? (y/n): n
 Select number/s to restore: 1 2 4
 
 ┌───────────────────────────────────────────────────────┐
- Restored test to /home/v4h/test-dir/test
+ Restored test1 to /home/v4h/test-dir/test
  Restored test2 to /home/v4h/test-dir/test2
  Restored test3 to /home/v4h/test-dir/test3
 └───────────────────────────────────────────────────────┘
