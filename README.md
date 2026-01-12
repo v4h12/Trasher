@@ -6,10 +6,13 @@ Trasher is a basic CLI program made with python that manages your trash and make
 
 ## How to Install
 
+```bash
 - git clone <https://github.com/v4h12/Trasher>
 - cd trasher
 - chmod +x install.sh
 - ./install.sh
+```
+
 Then Bob's your uncle, you're ready to go!
 
 ## How it looks
