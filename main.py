@@ -17,7 +17,10 @@ import argparse
 #                                                               #
 #       This was made by Ethan Scott (v4h12 on github)          #
 # ------------------------------------------------------------- #
-#            github: https://github.com/v4h12                   #
+#            github: https://github.com/v4h12/trasher           #
+#            Copyright (c) 2025 Ethan Scott                     #
+#            MIT License                                        #
+#                                                               #
 #################################################################
 #                                                               #
 #   how the code flows:                                         #
@@ -206,7 +209,11 @@ def list_dir():
         return files
 
 
-##############################################################################
+#################################################################################
+#                                                                               #
+#           This is section is for any flags (ArgumentParser)                   #
+#                                                                               #
+#################################################################################
 
 parser = argparse.ArgumentParser()
 
@@ -249,7 +256,7 @@ if args.delete:
 
 # trasher --version
 if args.version:
-    print("\n0.1.0")
+    print("\n0.1.0 - (Pre-Release)")
     exit()
 
 # trasher -l or --list | copy main code to list files and (TODO) add date and time
@@ -257,14 +264,13 @@ if args.list:
     list_dir()
     exit()
 
-################################################################################
 
-################################################################################
-#                                                                              #
-#            MAIN CODE - This is all the user input which uses                 #
-#                       the def functions above                                #
-#                                                                              #
-################################################################################
+#################################################################################
+#                                                                               #
+#            MAIN CODE - This is all the user input which uses                  #
+#                       the def functions above                                 #
+#                                                                               #
+#################################################################################
 
 
 # wrap main code for 'KeyboardInterrupt' prompt
@@ -326,7 +332,8 @@ if __name__ == "__main__":
 #       - force it to delete
 #       - make script to change file permission (with permission from user) to delete
 #   (for now give permission error so program doesnt crash)
-# -------------------------------------------------#
 
+# -------------------------------------------------#
 # box outlines
 # ┌ ┐ ┘ └ ─
+# -------------------------------------------------#
