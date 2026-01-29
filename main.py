@@ -3,6 +3,41 @@ import os
 from urllib.parse import unquote
 import shutil
 import subprocess
+import argparse
+
+
+#################################################################
+#                                                               #
+#   ████████╗██████╗  █████╗ ███████╗██╗  ██╗███████╗██████╗    #
+#   ╚══██╔══╝██╔══██╗██╔══██╗██╔════╝██║  ██║██╔════╝██╔══██╗   #
+#      ██║   ██████╔╝███████║███████╗███████║█████╗  ██████╔╝   #
+#      ██║   ██╔══██╗██╔══██║╚════██║██╔══██║██╔══╝  ██╔══██╗   #
+#      ██║   ██║  ██║██║  ██║███████║██║  ██║███████╗██║  ██║   #
+#      ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   #
+#                                                               #
+#       This was made by Ethan Scott (v4h12 on github)          #
+# ------------------------------------------------------------- #
+#            github: https://github.com/v4h12                   #
+#################################################################
+#                                                               #
+#   how the code flows:                                         #
+#   - get trash paths > create functions (                      #
+#   restore, delete, inbetweens) > main code                    #
+#                                                               #
+#################################################################
+#                                                               #
+#   functions in order:                                         #
+#                                                               #
+#   - decode original path                                      #
+#   - restore trashed files/paths to original path              #
+#   - delete function which includes:                           #
+#       - permission changes (chmod and chown)                  #
+#   - choice function where user decides what they want to do   #
+#   - numbered list of trashed directories for user input       #
+#   - file formatting for file sizes (b, kb, mb, gb)            #
+#                                                               #
+#################################################################
+
 
 # grab directory to create variables of the output (files, info, expunged)
 tr_path = os.path.join(os.environ["HOME"], ".local/share/Trash")
@@ -11,7 +46,7 @@ tr_info = os.path.join(tr_path, "info")
 
 
 # this is to get the original path and decode it for the restore_file function
-def decog_file(info_file):
+def decog_path(info_file):
     if not os.path.exists(info_file):
         return None
 
@@ -27,12 +62,13 @@ def restore_file(filename):
     trash_file = os.path.join(tr_files, filename)
     info_file = os.path.join(tr_info, filename + ".trashinfo")
 
-    og_path = decog_file(info_file)
+    og_path = decog_path(info_file)
     if not og_path:
         print(f"Cannot restore {filename}: missing path or possibly missing .trashinfo")
         return
 
-    # first is file to be replaced, second is the file used to replace (os.rename)
+    # make sure directory exists first with os.makedirs then
+    # for os.rename - first is file to be replaced, second is the file used to replace it
     os.makedirs(os.path.dirname(og_path), exist_ok=True)
     os.rename(trash_file, og_path)
     os.remove(info_file)
@@ -43,6 +79,7 @@ def restore_file(filename):
 def delete_file(filename):
     trash_file = os.path.join(tr_files, filename)
     info_file = os.path.join(tr_info, filename + ".trashinfo")
+    og_path = decog_path(info_file)
 
     try:
         if os.path.isdir(trash_file):
@@ -52,9 +89,10 @@ def delete_file(filename):
 
         if os.path.exists(info_file):
             os.remove(info_file)
-        print(f"Permanently deleted {filename}")
+        print(f" Permanently deleted {og_path}")
 
     # create permission option to change ownership of protected file
+    # if user decides no, choices made / the rest get deleted
     except PermissionError:
         print(f"\nPermission denied: {filename} is protected")
         chper = get_choice(
@@ -147,35 +185,95 @@ def format_size(bytes):
     return f"{bytes:.1f}TB"
 
 
-#####################################################################################
-#                                                                                   #
-#           MAIN CODE - This is all the user input which uses                       #
-#                       the def functions above                                     #
-#                                                                                   #
-#####################################################################################
+# list directories and files in trash -- turned into function to become usable
+def list_dir():
+    if not os.listdir(tr_files):
+        print("\nTrash is empty... nothing to trash :(\n")
+        exit()
+    else:
+        print("Files in trash: ")
+        print("┌" + "─" * 55 + "┐")
+        files = os.listdir(tr_files)
+        for i, filename in enumerate(files, 1):
+            file_path = os.path.join(tr_files, filename)
+            if os.path.isdir(file_path):
+                size_bytes = os.stat(os.path.join(tr_files, filename)).st_size
+                print(f" {i}.) {filename}(/) - {format_size(size_bytes)}")
+            else:
+                size_bytes = os.stat(os.path.join(tr_files, filename)).st_size
+                print(f" {i}.) {filename} - {format_size(size_bytes)}")
+        print("└" + "─" * 55 + "┘")
+        return files
 
-# print filenames in the info dir
+
+##############################################################################
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument(
+    "-l", "--list", action="store_true", help="list files or directories in the trash"
+)
+
+parser.add_argument(
+    "--version", action="store_true", help="shows softwares version number"
+)
+
+parser.add_argument(
+    "-R",
+    "--restore",
+    action="store_true",
+    help="restore all files or directories in the trash",
+)
+
+parser.add_argument(
+    "-D",
+    "--delete",
+    action="store_true",
+    help="permanently delete all files or directories in the trash",
+)
+
+# this reads what the users input is for the argparse function
+args = parser.parse_args()
+
+# FIX - after this command is run, main code still runs ~ prints 'trash empty :(" (unnecessary)'
+# trasher -R or --restore
+if args.restore:
+    for filename in os.listdir(tr_files):
+        restore_file(filename)
+    exit()
+
+# trasher -D or --delete
+if args.delete:
+    for filename in os.listdir(tr_files):
+        delete_file(filename)
+
+# trasher --version
+if args.version:
+    print("\n0.1.0")
+    exit()
+
+# trasher -l or --list | copy main code to list files and (TODO) add date and time
+if args.list:
+    list_dir()
+    exit()
+
+################################################################################
+
+################################################################################
+#                                                                              #
+#            MAIN CODE - This is all the user input which uses                 #
+#                       the def functions above                                #
+#                                                                              #
+################################################################################
+
+
 # wrap main code for 'KeyboardInterrupt' prompt
 if __name__ == "__main__":
     try:
-        if not os.listdir(tr_files):
-            print("\nTrash is empty... nothing to trash :(\n")
-            exit()
-        else:
-            print("Files in trash: ")
-            print("┌" + "─" * 55 + "┐")
-            files = os.listdir(tr_files)
-            for i, filename in enumerate(files, 1):
-                file_path = os.path.join(tr_files, filename)
-                if os.path.isdir(file_path):
-                    size_bytes = os.stat(os.path.join(tr_files, filename)).st_size
-                    print(f" {i}.) {filename}(/) - {format_size(size_bytes)}")
-                else:
-                    size_bytes = os.stat(os.path.join(tr_files, filename)).st_size
-                    print(f" {i}.) {filename} - {format_size(size_bytes)}")
+        # this is used to call the list_dir function (originally not a function)
+        files = list_dir()
 
         # user input
-        print("└" + "─" * 55 + "┘")
         what = get_choice("\nRestore or Delete files? (r/d): ", ["r", "d"])
 
         # if you chose 'r' to restore files
