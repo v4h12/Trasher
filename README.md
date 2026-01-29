@@ -1,4 +1,11 @@
-# Trasher
+```
+   ████████╗██████╗  █████╗ ███████╗██╗  ██╗███████╗██████╗ 
+   ╚══██╔══╝██╔══██╗██╔══██╗██╔════╝██║  ██║██╔════╝██╔══██╗
+      ██║   ██████╔╝███████║███████╗███████║█████╗  ██████╔╝
+      ██║   ██╔══██╗██╔══██║╚════██║██╔══██║██╔══╝  ██╔══██╗
+      ██║   ██║  ██║██║  ██║███████║██║  ██║███████╗██║  ██║
+      ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+```
 
 ## Meet Trasher
 
@@ -54,7 +61,7 @@ Be careful doing this, any important files that you delete are at your own discr
 
 ## Inspiration
 
-This is my very first actual project that I have created from scratch, I have spent the past year learning python - having no previous coding experience. It has been quite the journey so far and quite the steep learning process - such as learning libraries I have never used and reading through docs, going through StackOverFlow for the most basic issues and also just keeping up and remembering which part of your code does what. These projects are what I enjoy making - something useful, simple and fun!
+This is my very first project that I have created from scratch, I have spent the past year learning python - having no previous coding experience. It has been quite the journey so far and quite the steep learning process - such as learning libraries I have never used and reading through docs, going through StackOverFlow for the most basic issues and also just keeping up and remembering which part of your code does what. These projects are what I enjoy making - something useful, simple and fun!
 In lieu of the many free resources I myself have used, i thought it would only be fitting to give something in return, regardless of how small it may be.
 
 Please feel free to make any suggestions, pull requests or anything - it will all be appreciated.
@@ -63,11 +70,11 @@ Please feel free to make any suggestions, pull requests or anything - it will al
 
 **To Add:**
 
-- I plan on adding a TUI version with the curses library... More to come.
-- There is also a plan on adding in flags for more specific usage of Trasher
 - Desktop use (ascii art)
+- Restore and delete files using fzf + multi-select (includes trashing files from anywhere)
+- I plan on adding a TUI version with the curses library... More to come.
 
 **Additional Notes:**
 
 - Created and Tested on Python 3.13.7
-- Made using Arch Linux and designed for linux specific use
+- Made using Arch Linux and designed for Linux specific use
