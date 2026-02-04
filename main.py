@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import os
-from urllib.parse import unquote
 import shutil
 import subprocess
 import argparse
+from urllib.parse import unquote
 
 
 #################################################################
@@ -209,6 +209,67 @@ def list_dir():
         return files
 
 
+# fzf implementation option for ease of use of speed
+def fzf_path():
+    mapping = {}
+    for filename in os.listdir(tr_files):
+        info_file = os.path.join(tr_info, filename + ".trashinfo")
+        og_path = decog_path(info_file)
+        if og_path:
+            mapping[og_path] = filename
+    return mapping
+
+
+def fzf_choice(names):
+    try:
+        result = subprocess.run(
+            ["fzf", "--reverse", "--multi"],
+            input="\n".join(names),
+            text=True,
+            capture_output=True,
+        )
+        return result.stdout.strip().split("\n") if result.stdout else []
+    except subprocess.CalledProcessError:
+        return []
+    except FileNotFoundError:
+        print("fzf not found in system")
+        exit(1)
+
+
+def fzf_opt():
+    """convert the dict into a list for fzf and
+    use the keys from the tuple to show user trashed files"""
+    try:
+        mapping = fzf_path()
+        choices = fzf_choice(list(mapping.keys()))
+        if not choices or choices == [""]:
+            print("\nNothing selected")
+            return
+
+        print("┌" + "─" * 55 + "┐")
+        print(" Selected: ")
+        for path in choices:
+            print(f" - {path}")
+        print("└" + "─" * 55 + "┘")
+
+        what = get_choice("\nRestore or Delete? r/d): ", ["r", "d"])
+
+        print("\n┌" + "─" * 55 + "┐")
+        if what == "r":
+            for path in choices:
+                tr_filename = mapping[path]
+                restore_file(tr_filename)
+        elif what == "d":
+            for path in choices:
+                tr_filename = mapping[path]
+                delete_file(tr_filename)
+        print("└" + "─" * 55 + "┘")
+        return choices
+
+    except KeyboardInterrupt:
+        print("\n\n... Quitting trasher")
+
+
 #################################################################################
 #                                                                               #
 #           This is section is for any flags (ArgumentParser)                   #
@@ -219,10 +280,6 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument(
     "-l", "--list", action="store_true", help="list files or directories in the trash"
-)
-
-parser.add_argument(
-    "--version", action="store_true", help="shows softwares version number"
 )
 
 parser.add_argument(
@@ -239,20 +296,36 @@ parser.add_argument(
     help="permanently delete all files or directories in the trash",
 )
 
+parser.add_argument(
+    "--version", action="store_true", help="shows softwares version number"
+)
+
+parser.add_argument(
+    "-f",
+    "--fzf",
+    action="store_true",
+    help="use fzf (fuzzyfinder) to restore or delete files",
+)
+
 # this reads what the users input is for the argparse function
 args = parser.parse_args()
 
 # FIX - after this command is run, main code still runs ~ prints 'trash empty :(" (unnecessary)'
 # trasher -R or --restore
 if args.restore:
+    print("\n┌" + "─" * 55 + "┐")
     for filename in os.listdir(tr_files):
         restore_file(filename)
+    print("└" + "─" * 55 + "┘")
     exit()
 
 # trasher -D or --delete
 if args.delete:
+    print("\n┌" + "─" * 55 + "┐")
     for filename in os.listdir(tr_files):
         delete_file(filename)
+    print("└" + "─" * 55 + "┘")
+    exit()
 
 # trasher --version
 if args.version:
@@ -264,6 +337,12 @@ if args.list:
     list_dir()
     exit()
 
+if args.fzf:
+    if not os.listdir(tr_files):
+        print("\ntrash is empty, nothing to trash :( \n")
+    else:
+        fzf_opt()
+    exit()
 
 #################################################################################
 #                                                                               #
