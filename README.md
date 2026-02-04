@@ -68,13 +68,20 @@ Please feel free to make any suggestions, pull requests or anything - it will al
 
 ##
 
+**Added:**
+
+- Flags have been added, run '$ trasher -h' to see usage options
+- fzf has been added an as option to restore or delete files ($ trasher -f)
+- A seperate file, fzf.py has also been added as it's own thing for you to see/use which uses pyfzf
+
 **To Add:**
 
 - Desktop use (ascii art)
-- Restore and delete files using fzf + multi-select (includes trashing files from anywhere)
+- Trashing files from anywhere
 - I plan on adding a TUI version with the curses library... More to come.
 
 **Additional Notes:**
 
 - Created and Tested on Python 3.13.7
 - Made using Arch Linux and designed for Linux specific use
+- Using the MIT license
