@@ -329,7 +329,7 @@ if args.delete:
 
 # trasher --version
 if args.version:
-    print("\n0.1.0 - (Pre-Release)")
+    print("\n0.2.1 - (Pre-Release)")
     exit()
 
 # trasher -l or --list | copy main code to list files and (TODO) add date and time
