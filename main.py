@@ -3,7 +3,8 @@ import os
 import shutil
 import subprocess
 import argparse
-from urllib.parse import unquote
+from urllib.parse import unquote, quote
+from datetime import datetime
 
 
 #################################################################
@@ -49,6 +50,7 @@ tr_info = os.path.join(tr_path, "info")
 
 
 # this is to get the original path and decode it for the restore_file function
+# unquote is used here for percent encoded sequences from the .trashinfo files
 def decog_path(info_file):
     if not os.path.exists(info_file):
         return None
@@ -209,59 +211,158 @@ def list_dir():
         return files
 
 
+#######################################################################################
+#
+# implementation of trashing files
+# this follows freedesktop.org trash spec:
+#
+# the point is to move the file to .local/share/Trash/ where there
+# are 2 directories they go inside ~ 'files' and 'info'
+# Files:
+#   - this is where the original file/dir will be placed, with their
+#   original path only, nothing else changed (keep in mind for dupes)
+# Info:
+#   - this is the trickier part, paths need to be percent encoded
+#     (this has already been dealt with by decog_path which does the opposite)
+#   - time and date is required as 'DeletionDate', use datetime library and
+#     this deals with FILES ONLY not directories.
+#
+# PREVIEW of what .trashinfo file should look like:
+# [Trash Info]
+# Path=/home/v4h/Documents/learning/server%2B/1.11%20-%20server%20components.pdf
+# DeletionDate=2026-03-05T11:10:52
+#
+######################################################################################
+
+
+# abspath is used when user types path to be deleted
+def decimate_file(filepath):
+    fpath = os.path.abspath(filepath)
+    if not os.path.exists(fpath):
+        print(f"Cannot trash {filepath}: file or directory doesn't exist")
+        return
+
+    # create variables for paths including the file destination (coord)
+    filename = os.path.basename(fpath)
+    coord = os.path.join(tr_files, filename)
+    info_file = os.path.join(tr_info, filename + ".trashinfo")
+
+    # added a counter for dupes, whether it'll work im not sure due to
+    # the restore function, splitext splits the name from the extention (ext)
+    # e.g. text(1).txt text(2).txt *ONLY* when names are the same, thats why 'or' is used
+    counter = 1
+    while os.path.exists(coord) or os.path.exists(info_file):
+        name, ext = os.path.splitext(filename)
+        dname = f"{name}({counter}){ext}"
+        coord = os.path.join(tr_files, dname)
+        info_file = os.path.join(tr_info, dname + ".trashinfo")
+        counter += 1
+
+    # this is ti write to the .trashinfo file - changes time to a string
+    # info_file is important here as it is used for making the .trashinfo file
+    # use quote to percent encode the sequence (opposite to decog_path)
+    deletion_date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    with open(info_file, "w") as f:
+        f.write("[Trash Info]\n")
+        f.write(f"Path={quote(fpath, safe='/')}\n")
+        f.write(f"DeletionDate={deletion_date}\n")
+
+    # shutil to easily move file to destination (trash) and exception clause for safety
+    try:
+        shutil.move(fpath, coord)
+        print(f"Trashed {filename}")
+    except Exception as e:
+        os.remove(info_file)
+        print(f"Failed to trash {filename}: {e}")
+
+
+#####################################################################################
 # fzf implementation option for ease of use of speed
+# changed mapping to trash path instead of og path for ease of fzf preview
 def fzf_path():
     mapping = {}
     for filename in os.listdir(tr_files):
         info_file = os.path.join(tr_info, filename + ".trashinfo")
         og_path = decog_path(info_file)
         if og_path:
-            mapping[og_path] = filename
+            trash_path = os.path.join(tr_files, filename)
+            mapping[og_path] = trash_path
     return mapping
 
 
-def fzf_choice(names):
+# use fzf file preview (--preview=cat {}) - this is done, includinfg pdftotext,
+# i already regret thinking about this but image preview as well
+# TODO:
+# - change fzf path to og_path (currently showing trash path (.local/share/Trash/files))
+#   something to do with --with-nth and --delimiter
+# - add image preview to the retardedly bitchass long '--preview' line
+def fzf_choice(mapping):
+    lines = [f"{og}\t{trash}" for og, trash in mapping.items()]
     try:
         result = subprocess.run(
-            ["fzf", "--reverse", "--multi"],
-            input="\n".join(names),
+            [
+                "fzf",
+                "--reverse",
+                "--multi",
+                "--with-nth=1",
+                "--delimiter=\t",
+                '--preview=f={2}; ext="${f##*.}"; if [ -d "$f" ]; then ls -lah "$f"; elif [ "$ext" = "pdf" ]; then pdftotext "$f" -; else cat "$f"; fi',
+            ],
+            input="\n".join(lines),
             text=True,
             capture_output=True,
         )
-        return result.stdout.strip().split("\n") if result.stdout else []
+        selected = []
+        for line in result.stdout.strip().split("\n"):
+            if line:
+                og, trash = line.split("\t")
+                selected.append((og, trash))
+        return selected
     except subprocess.CalledProcessError:
         return []
     except FileNotFoundError:
         print("fzf not found in system")
         exit(1)
 
+    #     return result.stdout.strip().split("\n") if result.stdout else []
+    # except subprocess.CalledProcessError:
+    #     return []
+    # except FileNotFoundError:
+    #     print("fzf not found in system")
+    #     exit(1)
 
+
+# convert the dict into a list for fzf and
+# use the values from the tuple to show user trashed files
 def fzf_opt():
-    """convert the dict into a list for fzf and
-    use the keys from the tuple to show user trashed files"""
     try:
         mapping = fzf_path()
-        choices = fzf_choice(list(mapping.keys()))
+        # choices = fzf_choice(list(mapping.values()))
+        choices = fzf_choice(mapping)
+        # reverse = {v: k for k, v in mapping.items()}
         if not choices or choices == [""]:
             print("\nNothing selected")
             return
 
         print("┌" + "─" * 55 + "┐")
         print(" Selected: ")
-        for path in choices:
-            print(f" - {path}")
+        # for path in choices:
+        for og, trash in choices:
+            print(f" - {og}")
         print("└" + "─" * 55 + "┘")
 
-        what = get_choice("\nRestore or Delete? r/d): ", ["r", "d"])
+        what = get_choice("\nRestore or Delete? (r/d): ", ["r", "d"])
 
         print("\n┌" + "─" * 55 + "┐")
         if what == "r":
-            for path in choices:
-                tr_filename = mapping[path]
+            # for path in choices:
+            for og, trash in choices:
+                tr_filename = os.path.basename(trash)
                 restore_file(tr_filename)
         elif what == "d":
-            for path in choices:
-                tr_filename = mapping[path]
+            # for path in choices:
+            for og, trash in choices:
+                tr_filename = os.path.basename(trash)
                 delete_file(tr_filename)
         print("└" + "─" * 55 + "┘")
         return choices
@@ -297,7 +398,10 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--version", action="store_true", help="shows softwares version number"
+    "-t",
+    "--trash",
+    metavar="[file]",
+    help="trash a file or directory",
 )
 
 parser.add_argument(
@@ -305,6 +409,10 @@ parser.add_argument(
     "--fzf",
     action="store_true",
     help="use fzf (fuzzyfinder) to restore or delete files",
+)
+
+parser.add_argument(
+    "--version", action="store_true", help="shows softwares version number"
 )
 
 # this reads what the users input is for the argparse function
@@ -325,6 +433,10 @@ if args.delete:
     for filename in os.listdir(tr_files):
         delete_file(filename)
     print("└" + "─" * 55 + "┘")
+    exit()
+
+if args.trash:
+    decimate_file(args.trash)
     exit()
 
 # trasher --version
@@ -398,6 +510,11 @@ if __name__ == "__main__":
         exit(0)
 
 
+# TODO:
+# implement error code for if trash dir is not yet created / create trash dir on install within install script
+# create delete function for multiple files - then implement fzf
+# - this also follows the freedesktop.org trash spec: (https://specifications.freedesktop.org/trash/1.0/)
+
 # -------------------------------------------------#
 # **FIXED**
 # issue: when deleted files are recovered, they get restored in a directory with the files inside and name instead
@@ -414,5 +531,6 @@ if __name__ == "__main__":
 
 # -------------------------------------------------#
 # box outlines
+#
 # ┌ ┐ ┘ └ ─
 # -------------------------------------------------#
