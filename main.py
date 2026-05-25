@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 import argparse
+import argcomplete
 from urllib.parse import unquote, quote
 from datetime import datetime
 
@@ -42,6 +43,11 @@ from datetime import datetime
 #                                                               #
 #################################################################
 
+# check if trash dir exists, if not then make it (shouldve been here from the start)
+trash_dir = os.path.expanduser("~/.local/share/Trash")
+if not os.path.isdir(trash_dir):
+    for subdir in ("info", "files", "expunged"):
+        os.makedirs(os.path.join(trash_dir, subdir), exist_ok=True)
 
 # grab directory to create variables of the output (files, info, expunged)
 tr_path = os.path.join(os.environ["HOME"], ".local/share/Trash")
@@ -69,7 +75,9 @@ def restore_file(filename):
 
     og_path = decog_path(info_file)
     if not og_path:
-        print(f"Cannot restore {filename}: missing path or possibly missing .trashinfo")
+        print(
+            f"Cannot restore {filename}: missing path or possibly missing .trashinfo \n - Check .local/share/Trash/info for {filename}.trashinfo"
+        )
         return
 
     # make sure directory exists first with os.makedirs then
@@ -270,10 +278,10 @@ def decimate_file(filepath):
     # shutil to easily move file to destination (trash) and exception clause for safety
     try:
         shutil.move(fpath, coord)
-        print(f"Trashed {filename}")
+        print(f" {fpath}")
     except Exception as e:
         os.remove(info_file)
-        print(f"Failed to trash {filename}: {e}")
+        print(f"Failed to trash {fpath}: {e}")
 
 
 #####################################################################################
@@ -312,6 +320,15 @@ def fzf_choice(mapping):
             text=True,
             capture_output=True,
         )
+
+        # reference for different terminals with bash: (https://kszenes.github.io/blog/2024/ImgCat/)
+        #   - another option is chafa which seems to work well over imgcat which is mainly for iTerm2
+        # if [ "$LC_TERMINAL" = "iTerm2" ]; then
+        #   alias icat="imgcat -H 33%"
+        # else
+        #   alias icat="kitten icat"
+        # fi
+
         selected = []
         for line in result.stdout.strip().split("\n"):
             if line:
@@ -323,13 +340,6 @@ def fzf_choice(mapping):
     except FileNotFoundError:
         print("fzf not found in system")
         exit(1)
-
-    #     return result.stdout.strip().split("\n") if result.stdout else []
-    # except subprocess.CalledProcessError:
-    #     return []
-    # except FileNotFoundError:
-    #     print("fzf not found in system")
-    #     exit(1)
 
 
 # convert the dict into a list for fzf and
@@ -373,36 +383,89 @@ def fzf_opt():
 
 #################################################################################
 #                                                                               #
-#           This is section is for any flags (ArgumentParser)                   #
+#       This is section is for any flags (ArgumentParser, Argcomplete)          #
 #                                                                               #
 #################################################################################
 
-parser = argparse.ArgumentParser()
+
+# basic af honestly, still annoying (https://pypi.org/project/argcomplete/)
+# still dunno what **kwargs is though, copy and paste
+def trash_completer(**kwargs):
+    return os.listdir(tr_files)
+
+
+# trying to implement a case insensitive autocomplete but idk
+def find_trash(filename):
+    for f in os.listdir(tr_files):
+        if f.lower() == filename.lower():
+            return f
+    return None
+
+
+parser = argparse.ArgumentParser(
+    prog="trasher",
+    usage="trasher [OPTION]... [FILE]...",
+    description="Your trash manager, Trasher",
+)
+
+parser.add_argument("files", metavar="Files", nargs="*", help=" ")
 
 parser.add_argument(
     "-l", "--list", action="store_true", help="list files or directories in the trash"
 )
 
 parser.add_argument(
+    "-V",
+    "--verbose-all",
+    action="store_true",
+    help="Give verbose information (.trashinfo) about all files",
+)
+
+parser.add_argument(
+    "-v",
+    "--verbose",
+    metavar="[FILE]",
+    nargs="+",
+    help="Give verbose information (.trashinfo) about a specific file",
+).completer = trash_completer  # ignore these errors
+
+parser.add_argument(
+    "-t",
+    "--trash",
+    metavar="[FILE]",
+    nargs="+",
+    help="trash a file or directory",
+)
+
+parser.add_argument(
     "-R",
-    "--restore",
+    "--restore-all",
     action="store_true",
     help="restore all files or directories in the trash",
 )
 
 parser.add_argument(
+    "-r",
+    "--restore",
+    metavar="[file]",
+    nargs="+",
+    help="restore all files or directories in the trash",
+).completer = trash_completer  # ignore these errors
+
+parser.add_argument(
     "-D",
-    "--delete",
+    "--delete-all",
     action="store_true",
     help="permanently delete all files or directories in the trash",
 )
 
 parser.add_argument(
-    "-t",
-    "--trash",
+    "-d",
+    "--delete",
     metavar="[file]",
-    help="trash a file or directory",
-)
+    nargs="+",
+    help="permanently delete all files or directories in the trash",
+).completer = trash_completer  # ignore these errors
 
 parser.add_argument(
     "-f",
@@ -415,33 +478,99 @@ parser.add_argument(
     "--version", action="store_true", help="shows softwares version number"
 )
 
-# this reads what the users input is for the argparse function
+# this reads what the users input is for the argparse function and the argcomplete
+argcomplete.autocomplete(parser)
 args = parser.parse_args()
 
-# FIX - after this command is run, main code still runs ~ prints 'trash empty :(" (unnecessary)'
 # trasher -R or --restore
-if args.restore:
-    print("\n┌" + "─" * 55 + "┐")
-    for filename in os.listdir(tr_files):
-        restore_file(filename)
-    print("└" + "─" * 55 + "┘")
+if args.restore_all:
+    try:
+        what = get_choice("\nRestore all files in the trash? (y/n): \n", ["y", "n"])
+
+        if what == "y":
+            print("\n┌" + "─" * 55 + "┐")
+            for filename in os.listdir(tr_files):
+                restore_file(filename)
+            print("└" + "─" * 55 + "┘")
+
+        elif what == "n":
+            print("\n\n... Quitting trasher\n")
+            exit()
+
+    except KeyboardInterrupt:
+        print("\n\n... Quitting trasher")
+
     exit()
 
 # trasher -D or --delete
+if args.delete_all:
+    try:
+        what = get_choice("\nDelete all files in the trash? (y/n): \n", ["y", "n"])
+
+        if what == "y":
+            print("\n┌" + "─" * 55 + "┐")
+            for filename in os.listdir(tr_files):
+                delete_file(filename)
+            print("└" + "─" * 55 + "┘")
+
+        elif what == "n":
+            print("\n\n... Quitting trasher\n")
+            exit()
+
+    except KeyboardInterrupt:
+        print("\n\n... Quitting trasher")
+
+    exit()
+
+if args.restore:
+    print("\n┌" + "─" * 55 + "┐")
+    for filename in args.restore:
+        match = find_trash(filename)
+        if match:
+            restore_file(filename)
+        else:
+            print(f" '{filename}' not found in trash.")
+    print("└" + "─" * 55 + "┘")
+    exit()
+
 if args.delete:
     print("\n┌" + "─" * 55 + "┐")
-    for filename in os.listdir(tr_files):
-        delete_file(filename)
+    for filename in args.delete:
+        match = find_trash(filename)
+        if match:
+            delete_file(filename)
+        else:
+            print(f" '{filename}' not found in trash.")
     print("└" + "─" * 55 + "┘")
     exit()
 
 if args.trash:
-    decimate_file(args.trash)
+    print("\n┌" + "─" * 55 + "┐")
+    print(" Trashed:")
+    for filepath in args.trash:
+        decimate_file(filepath)
+    print("└" + "─" * 55 + "┘")
     exit()
 
 # trasher --version
 if args.version:
     print("\n0.2.1 - (Pre-Release)")
+    exit()
+
+if args.verbose:
+    for filename in args.verbose:
+        match = find_trash(filename)
+        if match:
+            info_file = os.path.join(tr_info, match + ".trashinfo")
+            print(open(info_file).read())
+        else:
+            print(f" '{filename}' not found in trash.")
+    exit()
+
+if args.verbose_all:
+    for filename in os.listdir(tr_info):
+        info_file = os.path.join(tr_info, filename)
+        print(open(info_file).read())
     exit()
 
 # trasher -l or --list | copy main code to list files and (TODO) add date and time
@@ -514,6 +643,8 @@ if __name__ == "__main__":
 # implement error code for if trash dir is not yet created / create trash dir on install within install script
 # create delete function for multiple files - then implement fzf
 # - this also follows the freedesktop.org trash spec: (https://specifications.freedesktop.org/trash/1.0/)
+# there is no autocomplete (tab) for when using arguments -r and -d
+# argcomplete on PyPI seems to have the solution
 
 # -------------------------------------------------#
 # **FIXED**
@@ -534,3 +665,31 @@ if __name__ == "__main__":
 #
 # ┌ ┐ ┘ └ ─
 # -------------------------------------------------#
+
+# FIX:
+# Traceback (most recent call last):
+#   File "/usr/local/bin/trasher", line 476, in <module>
+#     files = list_dir()
+#   File "/usr/local/bin/trasher", line 210, in list_dir
+#     size_bytes = os.stat(os.path.join(tr_files, filename)).st_size
+#                  ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# FileNotFoundError: [Errno 2] No such file or directory: '/home/v4h/.local/share/Trash/files/config.jsonc'
+
+# TODO:
+# this is due to config.jsonc being an empty symlink - removing the symlink from .local/share/Trash gets rid of the issue but doesnt fix it:
+# is os library there is a section about symlinks, anyway - the .trashinfo still stayed behind, cant remember if it was just
+# because i deleted the file in .local/share/Trash/files but whatever
+# os.stat() is following the symlinka nd failing - os.lstat() in list_dir() is better - could wrap in a try/except also
+
+# -r and -d uses find_trash(filename) for case insensitivity, but should pass the original filename to restore_file instead of match, like:
+# if match:
+#     restore_file(match)
+
+# argparse should be inside main incase anything gets imported.
+
+# format_size has a param (bytes) which shadows the builtin - should probably be renamed.
+#
+# ROOT
+# a big issue is not being able tp trash items in the root directory - this is because the trash spec has different places for trash there,
+# check trash spec for location, use something like os.stat().st_dev for device id of the files against the ones in the home dir, check for if trash is there
+# and account for it. files owned by root will use something similar to delete_file() function. MOUNT-POINT DETETCION.
