@@ -73,8 +73,7 @@ Please feel free to make any suggestions, pull requests or anything - it will al
 - Flags have been added, run '$ trasher -h' to see usage options
 - fzf has been added an as option to restore or delete files, which has now been improved($ trasher -f)
 - A seperate file, fzf.py has also been added as it's own thing for you to see/use which uses pyfzf
-- Trashing files from anywhere which follows the freedesktop.org trash spec: (<https://specifications.freedesktop.org/trash/1.0/>) - This currently is working but is limited to 1 file per argument (-t)
-
+- Trashing files from anywhere (except from root) which follows the freedesktop.org trash spec: (<https://specifications.freedesktop.org/trash/1.0/>)
 **To Add:**
 
 - Desktop use (ascii art)

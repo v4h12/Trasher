@@ -49,6 +49,7 @@ if not os.path.isdir(trash_dir):
     for subdir in ("info", "files", "expunged"):
         os.makedirs(os.path.join(trash_dir, subdir), exist_ok=True)
 
+
 # grab directory to create variables of the output (files, info, expunged)
 tr_path = os.path.join(os.environ["HOME"], ".local/share/Trash")
 tr_files = os.path.join(tr_path, "files")
@@ -190,12 +191,12 @@ def get_file_num(prompt, max_files):
 
 
 # list file or directory sizes when files get listed
-def format_size(bytes):
+def format_size(size):
     for unit in ["B", "KB", "MB", "GB"]:
-        if bytes < 1024:
-            return f"{bytes:.1f}{unit}"
-        bytes /= 1024
-    return f"{bytes:.1f}TB"
+        if size < 1024:
+            return f"{size:.1f}{unit}"
+        size /= 1024
+    return f"{size:.1f}TB"
 
 
 # list directories and files in trash -- turned into function to become usable
@@ -303,7 +304,7 @@ def fzf_path():
 # TODO:
 # - change fzf path to og_path (currently showing trash path (.local/share/Trash/files))
 #   something to do with --with-nth and --delimiter
-# - add image preview to the retardedly bitchass long '--preview' line
+# - add image preview to the retardedly bitchass long '--preview' line - gotta be a better way to do this
 def fzf_choice(mapping):
     lines = [f"{og}\t{trash}" for og, trash in mapping.items()]
     try:
@@ -387,6 +388,8 @@ def fzf_opt():
 #                                                                               #
 #################################################################################
 
+# should be noted that it works with multiple arguments, but pipx needs to be installed
+# so that argcomplete can be installed - in bash it needs to be evaluated, in zsh and fish... not sure.
 
 # basic af honestly, still annoying (https://pypi.org/project/argcomplete/)
 # still dunno what **kwargs is though, copy and paste
@@ -405,7 +408,7 @@ def find_trash(filename):
 parser = argparse.ArgumentParser(
     prog="trasher",
     usage="trasher [OPTION]... [FILE]...",
-    description="Your trash manager, Trasher",
+    description="Your CLI trash manager, Trasher",
 )
 
 parser.add_argument("files", metavar="Files", nargs="*", help=" ")
@@ -485,7 +488,7 @@ args = parser.parse_args()
 # trasher -R or --restore
 if args.restore_all:
     try:
-        what = get_choice("\nRestore all files in the trash? (y/n): \n", ["y", "n"])
+        what = get_choice("\nRestore all files in the trash? (y/n): ", ["y", "n"])
 
         if what == "y":
             print("\n┌" + "─" * 55 + "┐")
@@ -505,7 +508,7 @@ if args.restore_all:
 # trasher -D or --delete
 if args.delete_all:
     try:
-        what = get_choice("\nDelete all files in the trash? (y/n): \n", ["y", "n"])
+        what = get_choice("\nDelete all files in the trash? (y/n): ", ["y", "n"])
 
         if what == "y":
             print("\n┌" + "─" * 55 + "┐")
@@ -687,9 +690,10 @@ if __name__ == "__main__":
 
 # argparse should be inside main incase anything gets imported.
 
-# format_size has a param (bytes) which shadows the builtin - should probably be renamed.
-#
 # ROOT
 # a big issue is not being able tp trash items in the root directory - this is because the trash spec has different places for trash there,
 # check trash spec for location, use something like os.stat().st_dev for device id of the files against the ones in the home dir, check for if trash is there
 # and account for it. files owned by root will use something similar to delete_file() function. MOUNT-POINT DETETCION.
+
+# DONE:
+# changed format_size param to 'size' from 'bytes'
