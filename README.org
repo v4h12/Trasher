@@ -1,30 +1,23 @@
-```
-   ████████╗██████╗  █████╗ ███████╗██╗  ██╗███████╗██████╗ 
-   ╚══██╔══╝██╔══██╗██╔══██╗██╔════╝██║  ██║██╔════╝██╔══██╗
-      ██║   ██████╔╝███████║███████╗███████║█████╗  ██████╔╝
-      ██║   ██╔══██╗██╔══██║╚════██║██╔══██║██╔══╝  ██╔══██╗
-      ██║   ██║  ██║██║  ██║███████║██║  ██║███████╗██║  ██║
-      ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
-```
+* Trasher
 
-## Meet Trasher
+** Meet Trasher
 
 Trasher is a basic CLI program made with python that manages your trash and makes it simple.
 
-## How to Install
+** How to install:
 
-```bash
-- git clone <https://github.com/v4h12/Trasher>
-- cd trasher
-- chmod +x install.sh
-- ./install.sh
-```
+#+begin_src bash
+$ git clone <https://github.com/v4h12/Trasher>
+$ cd trasher
+$ chmod +x install.sh
+$ ./install.sh
+#+end_src
 
-Then Bob's your uncle, you're ready to go!
+Then Bob's your uncle, Trash something!
 
-## How it looks
+** How it looks
 
-```bash
+#+begin_src bash
 $ trasher
 Files in Trash:
 ┌───────────────────────────────────────────────────────┐
@@ -42,45 +35,47 @@ Restore all files? (y/n): n
 Select number/s to restore: 1 2 4
 
 ┌───────────────────────────────────────────────────────┐
- Restored test1 to /home/v4h/test-dir/test
+ Restored test1 to /home/v4h/test-dir/test1
  Restored test2 to /home/v4h/test-dir/test2
  Restored test3 to /home/v4h/test-dir/test3
 └───────────────────────────────────────────────────────┘
-```
+#+end_src
 
-## The way it works
+** The way it works:
 
 - Type 'trasher' into your terminal, the program will start and immediately list any files or directories in your trash.
 - You can decide whether you want to restore or delete anything with 'r/d'.
 - Either select all or individual files which are numbered within the list.
 - Type in which number you'd like to restore or delete and hit enter to let Trasher do its thing!
 
-**Note**
-~ any files that are protected through root privileges or permissions can still be deleted and you will be prompted with your password when you are at that point.
+#+begin_quote
+*NOTE*
+any files that are protected through root privileges or permissions can still be deleted and you will be prompted with your password when you are at that point.
 Be careful doing this, any important files that you delete are at your own discretion.
+#+end_quote
 
-## Inspiration
+** Inspiration:
 
 This is my very first project that I have created from scratch, I have spent the past year learning python - having no previous coding experience. It has been quite the journey so far and quite the steep learning process - such as learning libraries I have never used and reading through docs, going through StackOverFlow for the most basic issues and also just keeping up and remembering which part of your code does what. These projects are what I enjoy making - something useful, simple and fun!
 In lieu of the many free resources I myself have used, i thought it would only be fitting to give something in return, regardless of how small it may be.
 
 Please feel free to make any suggestions, pull requests or anything - it will all be appreciated.
 
-##
-
-**Added:**
+*** Added:
 
 - Flags have been added, run '$ trasher -h' to see usage options
 - fzf has been added an as option to restore or delete files, which has now been improved($ trasher -f)
 - A seperate file, fzf.py has also been added as it's own thing for you to see/use which uses pyfzf
 - Trashing files from anywhere (except from root) which follows the freedesktop.org trash spec: (<https://specifications.freedesktop.org/trash/1.0/>)
-**To Add:**
 
-- Desktop use (ascii art)
-- I plan on adding a TUI version with the curses library... Maybe.
+*** To Add:
 
-**Additional Notes:**
+- Updated install script
+- Modularity
+- Delete from anywhere using fzf
+
+*** Additional Notes:
 
 - Created and Tested on Python 3.13.7
-- Made using Arch Linux and designed for Linux specific use
-- Using the MIT license
+- Made inside Arch Linux and designed for Linux specific use
+- Using the GPL-3.0 license
