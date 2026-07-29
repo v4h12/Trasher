@@ -1,6 +1,6 @@
 * Trasher
 
-** Meet Trasher
+*** Meet Trasher
 
 Trasher is a basic CLI program made with python that manages your trash and makes it simple.
 
@@ -44,12 +44,12 @@ Select number/s to restore: 1 2 4
 ** The way it works:
 
 - Type 'trasher' into your terminal, the program will start and immediately list any files or directories in your trash.
-- You can decide whether you want to restore or delete anything with 'r/d'.
+- You can decide whether you want to restore or delete anything with arguments: 'r/d'.
 - Either select all or individual files which are numbered within the list.
-- Type in which number you'd like to restore or delete and hit enter to let Trasher do its thing!
+- Type in which number you'd like to restore/delete and hit enter to let Trasher do its thing!
 
 #+begin_quote
-*NOTE*
+*NOTE:*
 any files that are protected through root privileges or permissions can still be deleted and you will be prompted with your password when you are at that point.
 Be careful doing this, any important files that you delete are at your own discretion.
 #+end_quote
@@ -64,18 +64,23 @@ Please feel free to make any suggestions, pull requests or anything - it will al
 *** Added:
 
 - Flags have been added, run '$ trasher -h' to see usage options
-- fzf has been added an as option to restore or delete files, which has now been improved($ trasher -f)
+- fzf has been added an as option to restore or delete files, which has now been improved ($ trasher -f)
 - A seperate file, fzf.py has also been added as it's own thing for you to see/use which uses pyfzf
 - Trashing files from anywhere (except from root) which follows the freedesktop.org trash spec: (<https://specifications.freedesktop.org/trash/1.0/>)
 
 *** To Add:
 
-- Updated install script
+- Updated install script (for argcomplete package and pip)
+- Delete from anywhere /using fzf/
+- iOS like trash (delete file within /x/ amount of time)
 - Modularity
-- Delete from anywhere using fzf
 
 *** Additional Notes:
 
 - Created and Tested on Python 3.13.7
 - Made inside Arch Linux and designed for Linux specific use
 - Using the GPL-3.0 license
+
+#+begin_quote
+There is a current refactor in progress in order to provide modularity all round, as well as neatening up code and comments. The overall plan is to make it as simple as possible whilst still allowing you freedom.
+#+end_quote
